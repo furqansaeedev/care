@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode in Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Light Mode Colors */
+  --color-primary: #0B6B3A;
+  --color-primary-light: #1A8F4D;
+  --color-secondary: #E6F7EC;
+  --color-secondary-dark: #C8E6D0;
+  --color-accent: #2DBFA9;
+  --color-background: #F9FBF9;
+  --color-surface: #FFFFFF;
+  --color-text: #1F2A37;
+  --color-text-light: #6B7280;
+  --color-border: #E5E7EB;
+}
+
+/* Dark Mode Overrides */
+.dark {
+  --color-primary: #4ADE80; /* Brighter green for visibility */
+  --color-primary-light: #22C55E;
+  --color-secondary: #064E3B; /* Deep forest green */
+  --color-secondary-dark: #065F46;
+  --color-accent: #2DD4BF;
+  --color-background: #0F172A; /* Slate 900 */
+  --color-surface: #1E293B; /* Slate 800 */
+  --color-text: #F8FAFC; /* Slate 50 */
+  --color-text-light: #94A3B8; /* Slate 400 */
+  --color-border: #334155; /* Slate 700 */
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: "Inter", system-ui, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-primary-light px-6 py-3 text-sm font-semibold text-white transition-all duration-200 hover:bg-primary focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2 disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-primary bg-transparent px-6 py-3 text-sm font-semibold text-primary transition-all duration-200 hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text transition-all duration-200 hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+
+  /* Cards */
+  .card {
+    @apply rounded-2xl bg-surface p-6 shadow-sm border border-border transition-colors duration-300;
+  }
+  .card-highlight {
+    @apply rounded-2xl bg-secondary p-6 shadow-sm border border-secondary-dark;
+  }
+
+  /* Inputs */
+  .input-field {
+    @apply w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text placeholder:text-text-light focus:border-primary-light focus:outline-none focus:ring-2 focus:ring-primary-light/20 transition-colors duration-300;
+  }
+  .input-icon-wrapper {
+    @apply relative flex items-center;
+  }
+  .input-icon-wrapper .input-field {
+    @apply pl-10;
+  }
+  .input-icon-wrapper svg {
+    @apply absolute left-3 text-text-light;
+  }
+
+  /* Badges */
+  .badge-confirmed {
+    @apply inline-flex items-center rounded-full bg-secondary px-3 py-1 text-xs font-medium text-primary;
+  }
+  .badge-pending {
+    @apply inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400;
+  }
+
+  /* Sidebar Link */
+  .sidebar-link {
+    @apply flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-text-light transition-all duration-200 hover:bg-secondary hover:text-primary;
+  }
+  .sidebar-link-active {
+    @apply bg-secondary text-primary font-semibold;
+  }
+}

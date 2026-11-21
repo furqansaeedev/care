@@ -1,0 +1,39 @@
+{
+  "name": "care",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@daily-co/daily-js": "^0.95.0",
+    "@prisma/client": "^6.19.3",
+    "@upstash/ratelimit": "^2.2.1",
+    "@upstash/redis": "^1.41.0",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.11.0",
+    "jose": "^6.2.17",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^1.72.0",
+    "next": "16.4.6",
+    "next-cloudinary": "^7.1.1",
+    "next-themes": "^0.4.6",
+    "nodemailer": "^10.5.0",
+    "pusher": "^5.3.4",
+    "pusher-js": "^8.6.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "4.3.3",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "prisma": "^6.19.3",
+    "tailwindcss": "4.3.3"
+  }
+}
