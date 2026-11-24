@@ -5,10 +5,22 @@ import { createSession } from "@/lib/session";
 import { registerSchema, loginSchema } from "@/lib/validation";
 import { sendEmail } from "@/lib/mail";
 import { activationEmail } from "@/lib/email-templates";
+import { ratelimit } from "@/lib/ratelimit";
 import crypto from "crypto";
 
 export async function POST(req) {
   try {
+    // Rate Limiting
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const { success } = await ratelimit.limit(`login_${ip}`);
+
+    if (!success) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please try again after 1 minute." },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { action } = body;
 
@@ -25,34 +37,26 @@ export async function POST(req) {
 
       const hashedPassword = await hashPassword(password);
       
-      // Use a transaction to ensure User and Profile are created together
       const user = await prisma.$transaction(async (tx) => {
         const newUser = await tx.user.create({
           data: { name, email, password: hashedPassword, role },
         });
 
-        // Explicitly create the profile based on role
         if (role === "DOCTOR") {
-          await tx.doctorProfile.create({
-            data: { userId: newUser.id, specialty: "General", status: "PENDING" },
-          });
+          await tx.doctorProfile.create({ data: { userId: newUser.id, specialty: "General", status: "PENDING" } });
         } else if (role === "PATIENT") {
-          await tx.patientProfile.create({
-            data: { userId: newUser.id },
-          });
+          await tx.patientProfile.create({ data: { userId: newUser.id } });
         }
 
         return newUser;
       });
 
-      // Generate Activation Token
       const rawToken = crypto.randomBytes(32).toString("hex");
       const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
       await prisma.activationToken.create({ data: { tokenHash, expiresAt, userId: user.id } });
 
-      // Send Email
       const activationLink = `${process.env.APP_URL}/activate?token=${rawToken}`;
       const emailResult = await sendEmail({
         to: email,
@@ -87,13 +91,11 @@ export async function POST(req) {
 
       if (!user.emailVerified) return NextResponse.json({ error: "Please verify your email first.", needsActivation: true }, { status: 403 });
 
-      // STRICT ROLE CHECK FOR ADMIN
       if (user.role === "ADMIN") {
         await createSession({ ...user });
         return NextResponse.json({ success: true, redirect: "/admin" });
       }
 
-      // AUTO-CREATE MISSING PROFILES (Safety net)
       if (user.role === "DOCTOR" && !user.doctorProfile) {
         await prisma.doctorProfile.create({ data: { userId: user.id, specialty: "General" } });
         user.doctorProfile = { status: "PENDING" }; 
@@ -102,7 +104,6 @@ export async function POST(req) {
         await prisma.patientProfile.create({ data: { userId: user.id } });
       }
 
-      // Check Doctor Approval Status
       if (user.role === "DOCTOR") {
         if (user.doctorProfile?.status !== "APPROVED") {
           await createSession({ ...user, doctorStatus: user.doctorProfile?.status || "PENDING" });
